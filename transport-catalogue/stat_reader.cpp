@@ -1,10 +1,5 @@
-//Черепухин Евгений Сергеевич. Сплит 9 Версия 2. Исправлены замечания.
+//Черепухин Евгений Сергеевич. Сплит 9 Версия 3. Исправлены замечания.
 #include "stat_reader.h"
-
-#include <string>
-#include <iomanip>
-#include <vector>
-#include <list>
 
 namespace transport_catalogue 
 {

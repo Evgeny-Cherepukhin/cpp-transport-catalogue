@@ -1,11 +1,10 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 1. 
+// Черепухин Евгений Сергеевич. Сплит 10 Версия 2. 
 #include "request_handler.h"
 
 namespace transport::response {
 
 	using namespace transport::catalogue;	
 	using namespace std::literals;
-
 
 	RequestHelper::RequestHelper(TransportCatalogue& tc, const json::Array& stat_requests)
 		: catalogue_(tc)
@@ -63,7 +62,6 @@ namespace transport::response {
 				throw std::logic_error("unknown type");
 			}
 		}
-
 	}
 
 	void RequestHelper::PrintResponse(std::ostream& out) {		

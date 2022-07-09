@@ -1,8 +1,5 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 1.
+// Черепухин Евгений Сергеевич. Сплит 10 Версия 2.
 #include "map_renderer.h"
-
-#include <vector>
-
 
 namespace transport::render
 {
@@ -36,7 +33,7 @@ namespace transport::render
 														, settings.padding_);
 	}		 
 
-	std::string MapRenderer::render_map() const {
+	std::string MapRenderer::RenderMap() const {
 		svg::Document result;
 		CreateRoutes(result);
 		CreateRouteNumber(result);

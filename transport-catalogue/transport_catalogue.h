@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 1.
+// Черепухин Евгений Сергеевич. Сплит 10 Версия 2.
 #pragma once
 
 #include "domain.h"
@@ -10,14 +10,10 @@
 #include <set>
 #include <utility>
 
-
-
 namespace transport::catalogue
 {
-
 	using namespace transport::domains;
-	using namespace transport::render;
-	
+	using namespace transport::render;	
 
 	class TransportCatalogue
 	{
@@ -67,5 +63,5 @@ namespace transport::catalogue
 		std::map<std::string_view, std::shared_ptr<Bus>> buses_;
 		std::unique_ptr<MapRenderer> render_;
 		std::string map_;
-		};
+	};
 } // namespace transport::catalogue

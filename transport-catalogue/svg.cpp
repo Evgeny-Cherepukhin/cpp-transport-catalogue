@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 1. 
+// Черепухин Евгений Сергеевич. Сплит 10 Версия 2. 
 #include "svg.h"
 
 namespace svg {
@@ -28,7 +28,6 @@ namespace svg {
         else if (std::holds_alternative<Rgba>(color)) {
             out << std::get<Rgba>(color);
         }
-
         return out;
     }
 
@@ -199,5 +198,4 @@ namespace svg {
         }
         out << "</svg>"sv;
     }
-
 }  // namespace svg

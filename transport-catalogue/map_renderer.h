@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 1.
+// Черепухин Евгений Сергеевич. Сплит 10 Версия 2.
 #pragma once
 
 #include "domain.h"
@@ -12,9 +12,6 @@
 #include <optional>
 #include <sstream>
 #include <vector>
-
-
-
 
 namespace transport::render 
 {
@@ -122,8 +119,7 @@ namespace transport::render
             RenderSettings setings
         );
 
-        std::string render_map() const;
-
+        std::string RenderMap() const;
 
     private:
         void CreateRoutes(svg::Document& result) const;

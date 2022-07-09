@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 1. 
+// Черепухин Евгений Сергеевич. Сплит 10 Версия 2. 
 #pragma once
 
 namespace geo {
@@ -13,7 +13,5 @@ namespace geo {
             return !(*this == other);
         }
     };
-
     double ComputeDistance(Coordinates from, Coordinates to);
-
 }  // namespace geo

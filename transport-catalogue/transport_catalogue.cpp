@@ -1,9 +1,8 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 1.
+// Черепухин Евгений Сергеевич. Сплит 10 Версия 2.
 #include "transport_catalogue.h"
 
 namespace transport::catalogue
 {
-
 	TransportCatalogue::TransportCatalogue(
 		std::vector<std::shared_ptr<Stop>>& stops,
 		std::vector<std::shared_ptr<Bus>>& buses,
@@ -32,7 +31,7 @@ namespace transport::catalogue
 
 	void TransportCatalogue::MakeRenderMap(std::map<std::string_view, std::shared_ptr<Stop>>& stops, std::map<std::string_view, std::shared_ptr<Bus>>& buses, RenderSettings& render_settings) {
 		render_ = std::make_unique<MapRenderer>(stops, buses, render_settings);
-		map_ = render_->render_map();
+		map_ = render_->RenderMap();
 	}
 
 	const std::string& TransportCatalogue::GetMap() {

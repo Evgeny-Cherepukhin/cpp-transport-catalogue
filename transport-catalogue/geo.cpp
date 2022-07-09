@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 1. 
+// Черепухин Евгений Сергеевич. Сплит 10 Версия 2. 
 #define _USE_MATH_DEFINES
 #include "geo.h"
 
@@ -18,5 +18,4 @@ namespace geo {
             + cos(from.lat * dr) * cos(to.lat * dr) * cos(abs(from.lng - to.lng) * dr))
             * EARTH_RADIUS;
     }
-
 }  // namespace geo

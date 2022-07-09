@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 1.
+// Черепухин Евгений Сергеевич. Сплит 10 Версия 2.
 #pragma once
 
 #include "geo.h"
@@ -45,7 +45,6 @@ namespace transport::domains
 	// Производит парсинг маршрута, заполняет вектор остановок маршрута.
 		void Parse(const json::Dict& request);
 	};
-
 	// Возвращает дистанцию между остановками.
 	unsigned int RealDistanceBeetwenStops(std::shared_ptr<Stop> from, std::shared_ptr<Stop> to);
 }

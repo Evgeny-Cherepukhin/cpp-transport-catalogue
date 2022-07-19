@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 2. 
+// Черепухин Евгений Сергеевич. Сплит 11 Версия 1. 
 #include "svg.h"
 
 namespace svg {
@@ -13,7 +13,7 @@ namespace svg {
     inline std::ostream& operator<<(std::ostream& out, Rgba color) {
         out << "rgba(" << +color.red << "," << +color.green << "," << +color.blue << "," << +color.opacity << ")";
         return out;
-    }    
+    }
 
     std::ostream& operator<<(std::ostream& out, Color color) {
         if (std::holds_alternative<std::monostate>(color)) {

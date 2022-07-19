@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 2.
+// Черепухин Евгений Сергеевич. Сплит 11 Версия 1.
 #pragma once
 
 #include "domain.h"
@@ -7,21 +7,21 @@
 #include "json.h"
 
 #include <algorithm>
-#include <cstdlib>
-#include <iostream>
-#include <optional>
 #include <sstream>
 #include <vector>
 
-namespace transport::render 
+namespace transport::render
 {
     using namespace transport::domains;
     using namespace geo;
 
+    // Переменная для измерения точности.
     inline const double EPSILON = 1e-6;
 
-    bool IsZero(double value); 
+    // Сравнение с заданной точностью.
+    bool IsZero(double value);
 
+    // Структура для хранения установок изображения.
     struct RenderSettings {
         RenderSettings() = default;
 
@@ -39,6 +39,7 @@ namespace transport::render
         std::vector<svg::Color> color_palette_{};
     };
 
+    // Класс для переноса координат со сферы на плоскость.
     class SphereProjector
     {
     public:
@@ -109,6 +110,7 @@ namespace transport::render
         double zoom_coeff_ = 0.0;
     };
 
+    // Класс "Рисователь Карты".
     class MapRenderer
     {
     public:
@@ -119,14 +121,20 @@ namespace transport::render
             RenderSettings setings
         );
 
+        // Строковая переменная для хранения svg-данных для отрисовки карты
         std::string RenderMap() const;
 
     private:
+        // Рисователь маршрута(линии).
         void CreateRoutes(svg::Document& result) const;
+        // Рисователь имени(номера) маршрута.
         void CreateRouteNumber(svg::Document& result) const;
+        // Рисователь остановок(точек) на маршрутах. 
         void CreateStopPoint(svg::Document& result) const;
+        // Рисователь названия остановки.
         void CreateStopName(svg::Document& result) const;
 
+        // Данные для создания и отрисовки карты.
         const std::map<std::string_view, std::shared_ptr<Stop>>& stops_unique_;
         const std::map<std::string_view, std::shared_ptr<Bus>>& buses_unique_;
         const RenderSettings settings_;

@@ -1,9 +1,9 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 2. 
+// Черепухин Евгений Сергеевич. Сплит 11 Версия 1. 
 #include "request_handler.h"
 
 namespace transport::response {
 
-	using namespace transport::catalogue;	
+	using namespace transport::catalogue;
 	using namespace std::literals;
 
 	RequestHelper::RequestHelper(TransportCatalogue& tc, const json::Array& stat_requests)
@@ -12,7 +12,7 @@ namespace transport::response {
 		requests_.reserve(stat_requests.size());
 		for (const json::Node& n : stat_requests) {
 			Request request;
-			const auto& node_map = n.AsMap();
+			const auto& node_map = n.AsDict();
 			request.id = node_map.at("id"s).AsInt();
 
 			std::string type = node_map.at("type"s).AsString();
@@ -25,7 +25,7 @@ namespace transport::response {
 				request.type = RequestType::BUS;
 			}
 			else if (type == "Map"s) {
-				
+
 				request.type = RequestType::MAP;
 			}
 			else {
@@ -35,7 +35,7 @@ namespace transport::response {
 		}
 	}
 
-	void RequestHelper::GetResponses() {		
+	void RequestHelper::GetResponses() {
 		for (const Request& request : requests_) {
 			switch (request.type) {
 			case RequestType::STOP: {
@@ -64,42 +64,52 @@ namespace transport::response {
 		}
 	}
 
-	void RequestHelper::PrintResponse(std::ostream& out) {		
+	void RequestHelper::PrintResponse(std::ostream& out) {
 		json::Print(json::Document{ responses_ }, out);
 	}
 
 	json::Node RequestHelper::CreateJsonResponseError(const int request_id) {
-		json::Dict tmp;
-		tmp["request_id"s] = request_id;
-		tmp["error_message"s] = "not found"s;
-		return tmp;
+		return json::Builder{}.
+			StartDict().
+			Key("error_message"s).Value("not found"s).
+			Key("request_id"s).Value(request_id).
+			EndDict().
+			Build();		
 	}
 
 	json::Node RequestHelper::CreateJsonResponseStop(const int request_id, const domains::Stop& data) {
-		json::Dict tmp;	
-		json::Array tmp_1;
+		json::Builder builder;
+		builder.StartArray();
 		for (auto& bus : data.buses) {
-			tmp_1.push_back(bus);
-		}		
-		tmp["buses"s]= tmp_1;
-		tmp["request_id"s]= request_id;
-		return tmp;
+			builder.Value(bus);
+		}
+		json::Node tmp = builder.EndArray().Build();
+		return json::Builder{}.
+			StartDict().
+			Key("request_id"s).Value(request_id).
+			Key("buses").Value(tmp.AsArray()).
+			EndDict().
+			Build();
 	}
 
 	json::Node RequestHelper::CreateJsonResponseBus(const int request_id, const domains::Bus data) {
-		json::Dict tmp;
-		tmp["curvature"s] = data.curvature;
-		tmp["request_id"s] = request_id;
-		tmp["route_length"s] = data.route_length;
-		tmp["stop_count"s] = data.stop_count;
-		tmp["unique_stop_count"] = data.unique_stop_count;
-		return tmp;
+		return json::Builder{}.
+			StartDict().
+			Key("request_id"s).Value(request_id).
+			Key("route_length"s).Value(data.route_length).
+			Key("stop_count"s).Value(data.stop_count).
+			Key("unique_stop_count"s).Value(data.unique_stop_count).
+			Key("curvature"s).Value(data.curvature).
+			EndDict().
+			Build();
 	}
 
 	json::Node RequestHelper::CreateJsonResponseMap(const int request_id, const std::string map_render_data) {
-		json::Dict tmp;
-		tmp["map"s] = map_render_data;
-		tmp["request_id"s]= request_id;
-		return tmp;
+		return json::Builder{}.
+			StartDict().
+			Key("map"s).Value(map_render_data).
+			Key("request_id"s).Value(request_id).
+			EndDict().
+			Build();
 	}
 }

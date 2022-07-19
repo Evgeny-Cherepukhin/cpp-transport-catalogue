@@ -1,24 +1,17 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 2.
+// Черепухин Евгений Сергеевич. Сплит 11 Версия 1.
 #include "json_reader.h"
 
-#include <iomanip>
-#include <vector>
-#include <iostream>
-#include <cassert>
-#include <sstream>
-#include <string>
-
-namespace json::reader 
+namespace json::reader
 {
 	using namespace std;
 
-	std::vector<std::shared_ptr<Stop>> JsonReader:: ParseStop(const json::Array& base_requests) {
+	std::vector<std::shared_ptr<Stop>> JsonReader::ParseStop(const json::Array& base_requests) {
 		std::vector<std::shared_ptr<Stop>> result;
 		for (const auto& request : base_requests) {
-			const std::string& type = request.AsMap().at("type"s).AsString();
+			const std::string& type = request.AsDict().at("type"s).AsString();
 			if (type == "Stop"s) {
 				auto stop = std::make_shared<Stop>();
-				stop->Parse(request.AsMap());
+				stop->Parse(request.AsDict());
 				result.push_back(stop);
 			}
 		}
@@ -28,15 +21,15 @@ namespace json::reader
 	std::vector<std::shared_ptr<Bus>> JsonReader::ParseBus(const json::Array& base_requests) {
 		std::vector<std::shared_ptr<Bus>> result;
 		for (const auto& request : base_requests) {
-			const std::string& type = request.AsMap().at("type"s).AsString();
+			const std::string& type = request.AsDict().at("type"s).AsString();
 			if (type == "Bus"s) {
 				auto bus = std::make_shared<Bus>();
-				bus->Parse(request.AsMap());
+				bus->Parse(request.AsDict());
 				result.push_back(bus);
 			}
 		}
 		return result;
-	} 
+	}
 
 	svg::Color JsonReader::ParseColor(const json::Node& node) {
 		if (node.IsString()) {

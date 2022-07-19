@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 2.
+// Черепухин Евгений Сергеевич. Сплит 11 Версия 1.
 #include "transport_catalogue.h"
 
 namespace transport::catalogue
@@ -54,7 +54,7 @@ namespace transport::catalogue
 		if (!bus->is_roundtrip) {
 			for (int i = bus->stops.size() - 1; i - 1 > -1; --i) {
 				bus->route_length += RealDistanceBeetwenStops(stops_[bus->stops[i]], stops_[bus->stops[i - 1]]);
-			}			
+			}
 		}
 	}
 
@@ -107,5 +107,5 @@ namespace transport::catalogue
 		auto it = buses_.find(name);
 		if (it == buses_.end()) return nullptr;
 		return it->second;
-	}	
+	}
 }

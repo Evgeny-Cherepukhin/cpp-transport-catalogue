@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 2.
+// Черепухин Евгений Сергеевич. Сплит 11 Версия 1.
 #pragma once
 
 #include "geo.h"
@@ -12,7 +12,7 @@
 #include <memory>
 #include <ostream>
 
-namespace transport::domains 
+namespace transport::domains
 {
 	// Структура остановка. Хранит: Имя, Координаты, Расстояния до других остановок,
 	// Автобусы проходящие через эту остановку.
@@ -24,7 +24,7 @@ namespace transport::domains
 		std::map<std::string, int> stops_distances;
 		std::set<std::string> buses;
 
-	// Проводит парсинг запроса на заполнение остановки.
+		// Проводит парсинг запроса на заполнение остановки.
 		void Parse(const json::Dict& request);
 	};
 
@@ -42,7 +42,7 @@ namespace transport::domains
 		double curvature = 0.0;
 		std::vector<std::string> stops;
 
-	// Производит парсинг маршрута, заполняет вектор остановок маршрута.
+		// Производит парсинг маршрута, заполняет вектор остановок маршрута.
 		void Parse(const json::Dict& request);
 	};
 	// Возвращает дистанцию между остановками.

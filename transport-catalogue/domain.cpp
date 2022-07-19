@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 2. 
+// Черепухин Евгений Сергеевич. Сплит 11 Версия 1. 
 #include "domain.h"
 
 #include <iostream>
@@ -16,7 +16,7 @@ namespace transport::domains
 			request.at("longitude"s).AsDouble()
 		};
 
-		for (const auto& [stop_name, distance] : request.at("road_distances"s).AsMap()) {
+		for (const auto& [stop_name, distance] : request.at("road_distances"s).AsDict()) {
 			stops_distances[stop_name] = distance.AsInt();
 		}
 	}

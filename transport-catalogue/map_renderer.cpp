@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 10 Версия 2.
+// Черепухин Евгений Сергеевич. Сплит 11 Версия 1.
 #include "map_renderer.h"
 
 namespace transport::render
@@ -17,21 +17,21 @@ namespace transport::render
 	)
 		: stops_unique_(stops_unique)
 		, buses_unique_(buses_unique)
-		, settings_(settings) 
+		, settings_(settings)
 	{
 		std::vector<geo::Coordinates> geo_coor;
 		for (auto& stop : stops_unique) {
 			if (!stop.second.get()->buses.empty()) {
 				geo_coor.push_back(stop.second.get()->coordinates);
-			}			
+			}
 		}
 		map_points_ = std::make_unique<SphereProjector>(
-														  geo_coor.begin()
-														, geo_coor.end()
-														, settings.width_
-														, settings.height_
-														, settings.padding_);
-	}		 
+			geo_coor.begin()
+			, geo_coor.end()
+			, settings.width_
+			, settings.height_
+			, settings.padding_);
+	}
 
 	std::string MapRenderer::RenderMap() const {
 		svg::Document result;
@@ -45,7 +45,7 @@ namespace transport::render
 	}
 
 	void MapRenderer::CreateRoutes(svg::Document& result) const {
-		size_t color = 0;		
+		size_t color = 0;
 		for (const auto& [_, bus] : buses_unique_) {
 			if (bus->unique_stop_count < 2) {
 				continue;
@@ -151,7 +151,7 @@ namespace transport::render
 					.SetRadius(settings_.stop_radius_)
 					.SetFillColor("white"s);
 				result.Add(point);
-			}			
+			}
 		}
 	}
 
@@ -183,7 +183,7 @@ namespace transport::render
 					.SetFillColor("black");
 
 				result.Add(number);
-			}			
+			}
 		}
 	}
 }

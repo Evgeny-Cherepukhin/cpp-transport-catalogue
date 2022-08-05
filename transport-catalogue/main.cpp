@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 11 Версия 1.
+// Р§РµСЂРµРїСѓС…РёРЅ Р•РІРіРµРЅРёР№ РЎРµСЂРіРµРµРІРёС‡. РЎРїСЂРёРЅС‚ 12 Р’РµСЂСЃРёСЏ 1.
 #include "json_reader.h"
 #include "json_builder.h"
 #include "request_handler.h"
@@ -18,10 +18,11 @@ int main() {
     std::vector<std::shared_ptr<Stop>> stops = input_data.ParseStop(input_map.at("base_requests").AsArray());
     std::vector<std::shared_ptr<Bus>> buses = input_data.ParseBus(input_map.at("base_requests").AsArray());
     RenderSettings render_settings = input_data.ParseRenderSetting(input_map.at("render_settings").AsDict());
+    RoutingSettings ruting_settings = input_data.ParseRouterSetting(input_map.at("routing_settings").AsDict());
 
-    TransportCatalogue tc(stops, buses, render_settings);
+    TransportCatalogue tc(stops, buses, render_settings, ruting_settings);
     RequestHelper requests(tc, input_map.at("stat_requests").AsArray());
     requests.GetResponses();
     requests.PrintResponse(std::cout);
-    
+
 }

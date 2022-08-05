@@ -1,10 +1,11 @@
-// Черепухин Евгений Сергеевич. Сплит 11 Версия 1.
+// Р§РµСЂРµРїСѓС…РёРЅ Р•РІРіРµРЅРёР№ РЎРµСЂРіРµРµРІРёС‡. РЎРїСЂРёРЅС‚ 12 Р’РµСЂСЃРёСЏ 1.
 #pragma once
 
 #include "json.h"
 #include "json_builder.h"
 #include "transport_catalogue.h"
-//#include "json_reader.h"
+#include "transport_router.h"
+
 
 #include <map>
 #include <string>
@@ -14,49 +15,55 @@ namespace transport::response
 {
 
 	using namespace transport::catalogue;
+	using namespace transport::router;
 	using namespace std::literals;
 
-	// Перечислимый класс тип запроса.(Остановка, Маршрут, Карта)
+	// РџРµСЂРµС‡РёСЃР»РёРјС‹Р№ РєР»Р°СЃСЃ С‚РёРї Р·Р°РїСЂРѕСЃР°.(РћСЃС‚Р°РЅРѕРІРєР°, РњР°СЂС€СЂСѓС‚, РљР°СЂС‚Р°)
 	enum class RequestType
 	{
-		STOP, BUS, MAP
+		STOP, BUS, MAP, ROUTER
 	};
 
-	// Структура - хранит имя, номер и тип запроса.
+	// РЎС‚СЂСѓРєС‚СѓСЂР° - С…СЂР°РЅРёС‚ РёРјСЏ, РЅРѕРјРµСЂ Рё С‚РёРї Р·Р°РїСЂРѕСЃР°.
 	struct Request {
 		Request() = default;
 
 		int id;
 		std::string name = ""s;
+		std::string from = ""s;
+		std::string to = ""s;
 		RequestType type;
 	};
 
-	// Вспомогательный класс. Помогает создать ответ на запрос.
+	// Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Р№ РєР»Р°СЃСЃ. РџРѕРјРѕРіР°РµС‚ СЃРѕР·РґР°С‚СЊ РѕС‚РІРµС‚ РЅР° Р·Р°РїСЂРѕСЃ.
 	class RequestHelper {
 	public:
-		//Конструктор класса.
+		//РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РєР»Р°СЃСЃР°.
 		RequestHelper(TransportCatalogue& tc, const json::Array& stat_requests);
 
-		// Метод создает вектор ответов на запросы
+		// РњРµС‚РѕРґ СЃРѕР·РґР°РµС‚ РІРµРєС‚РѕСЂ РѕС‚РІРµС‚РѕРІ РЅР° Р·Р°РїСЂРѕСЃС‹
 		void GetResponses();
 
-		// Выводит ответы на запросы в поток.
+		// Р’С‹РІРѕРґРёС‚ РѕС‚РІРµС‚С‹ РЅР° Р·Р°РїСЂРѕСЃС‹ РІ РїРѕС‚РѕРє.
 		void PrintResponse(std::ostream& out);
 
 	private:
-		// Создаёт ответ об ошибке.
+		// РЎРѕР·РґР°С‘С‚ РѕС‚РІРµС‚ РѕР± РѕС€РёР±РєРµ.
 		json::Node CreateJsonResponseError(const int request_id);
 
-		// Создаёт ответ на запрос об остановке.
+		// РЎРѕР·РґР°С‘С‚ РѕС‚РІРµС‚ РЅР° Р·Р°РїСЂРѕСЃ РѕР± РѕСЃС‚Р°РЅРѕРІРєРµ.
 		json::Node CreateJsonResponseStop(const int request_id, const domains::Stop& data);
 
-		// Создаёт ответ на запрос о маршруте.
+		// РЎРѕР·РґР°С‘С‚ РѕС‚РІРµС‚ РЅР° Р·Р°РїСЂРѕСЃ Рѕ РјР°СЂС€СЂСѓС‚Рµ.
 		json::Node CreateJsonResponseBus(const int request_id, const domains::Bus data);
 
-		// Создаёт ответ на запрос о построении карты маршрутов.
+		// РЎРѕР·РґР°С‘С‚ РѕС‚РІРµС‚ РЅР° Р·Р°РїСЂРѕСЃ Рѕ РїРѕСЃС‚СЂРѕРµРЅРёРё РєР°СЂС‚С‹ РјР°СЂС€СЂСѓС‚РѕРІ.
 		json::Node CreateJsonResponseMap(const int request_id, const std::string map_render_data);
 
-		// Транспортный каталог, вектор запросов к нему и вектор ответов json::Array.
+		// РЎРѕР·РґР°С‘С‚ РѕС‚РІРµС‚ РЅР° Р·Р°РїСЂРѕСЃ Рѕ РїРѕСЃС‚СЂРѕРµРЅРёРё РјР°СЂС€СЂСѓС‚Р° РјРµР¶РґСѓ РґРІСѓРјСЏ РѕСЃС‚Р°РЅРѕРІРєР°РјРё.
+		json::Node CreateJsonResponseRoute(const int request_id, std::shared_ptr<std::vector<RouteItem>> route);
+
+		// РўСЂР°РЅСЃРїРѕСЂС‚РЅС‹Р№ РєР°С‚Р°Р»РѕРі, РІРµРєС‚РѕСЂ Р·Р°РїСЂРѕСЃРѕРІ Рє РЅРµРјСѓ Рё РІРµРєС‚РѕСЂ РѕС‚РІРµС‚РѕРІ json::Array.
 		TransportCatalogue& catalogue_;
 		std::vector<Request> requests_;
 		json::Array responses_;

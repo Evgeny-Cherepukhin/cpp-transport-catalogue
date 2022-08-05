@@ -1,12 +1,105 @@
-// Черепухин Евгений Сергеевич. Сплит 11 Версия 1. 
+// Р§РµСЂРµРїСѓС…РёРЅ Р•РІРіРµРЅРёР№ РЎРµСЂРіРµРµРІРёС‡. РЎРїСЂРёРЅС‚ 12 Р’РµСЂСЃРёСЏ 1. 
 #include "json.h"
 
 #include <iterator>
 
 namespace json {
 
-    namespace {
+    bool Node::IsInt() const {
+        return std::holds_alternative<int>(*this);
+    }
+
+    int Node::AsInt() const {
         using namespace std::literals;
+        if (!IsInt()) {
+            throw std::logic_error("Not an int"s);
+        }
+        return std::get<int>(*this);
+    }
+
+    bool Node::IsPureDouble() const {
+        return std::holds_alternative<double>(*this);
+    }
+    bool Node::IsDouble() const {
+        return IsInt() || IsPureDouble();
+    }
+    double Node::AsDouble() const {
+        using namespace std::literals;
+        if (!IsDouble()) {
+            throw std::logic_error("Not a double"s);
+        }
+        return IsPureDouble() ? std::get<double>(*this) : AsInt();
+    }
+
+    bool Node::IsBool() const {
+        return std::holds_alternative<bool>(*this);
+    }
+    bool Node::AsBool() const {
+        using namespace std::literals;
+        if (!IsBool()) {
+            throw std::logic_error("Not a bool"s);
+        }
+
+        return std::get<bool>(*this);
+    }
+
+    bool Node::IsNull() const {
+        return std::holds_alternative<std::nullptr_t>(*this);
+    }
+
+    bool Node::IsArray() const {
+        return std::holds_alternative<Array>(*this);
+    }
+    const Array& Node::AsArray() const {
+        using namespace std::literals;
+        if (!IsArray()) {
+            throw std::logic_error("Not an array"s);
+        }
+
+        return std::get<Array>(*this);
+    }
+
+    bool Node::IsString() const {
+        return std::holds_alternative<std::string>(*this);
+    }
+    const std::string& Node::AsString() const {
+        using namespace std::literals;
+        if (!IsString()) {
+            throw std::logic_error("Not a string"s);
+        }
+
+        return std::get<std::string>(*this);
+    }
+
+    bool Node::IsDict() const {
+        return std::holds_alternative<Dict>(*this);
+    }
+    const Dict& Node::AsDict() const {
+        using namespace std::literals;
+        if (!IsDict()) {
+            throw std::logic_error("Not a dict"s);
+        }
+        return std::get<Dict>(*this);
+    }
+
+    bool Node::operator==(const Node& rhs) const {
+        return GetValue() == rhs.GetValue();
+    }
+
+    const Node::Value& Node::GetValue() const {
+        return *this;
+    }
+
+    Node::Value& Node::GetValue() {
+        return *this;
+    }
+
+    inline bool operator!=(const Node& lhs, const Node& rhs) {
+        return !(lhs == rhs);
+    }
+
+    namespace {
+        using namespace std::literals;        
 
         Node LoadNode(std::istream& input);
         Node LoadString(std::istream& input);
@@ -136,7 +229,7 @@ namespace json {
         Node LoadNumber(std::istream& input) {
             std::string parsed_num;
 
-            // Считывает в parsed_num очередной символ из input
+            // РЎС‡РёС‚С‹РІР°РµС‚ РІ parsed_num РѕС‡РµСЂРµРґРЅРѕР№ СЃРёРјРІРѕР» РёР· input
             auto read_char = [&parsed_num, &input] {
                 parsed_num += static_cast<char>(input.get());
                 if (!input) {
@@ -144,7 +237,7 @@ namespace json {
                 }
             };
 
-            // Считывает одну или более цифр в parsed_num из input
+            // РЎС‡РёС‚С‹РІР°РµС‚ РѕРґРЅСѓ РёР»Рё Р±РѕР»РµРµ С†РёС„СЂ РІ parsed_num РёР· input
             auto read_digits = [&input, read_char] {
                 if (!std::isdigit(input.peek())) {
                     throw ParsingError("A digit is expected"s);
@@ -157,24 +250,24 @@ namespace json {
             if (input.peek() == '-') {
                 read_char();
             }
-            // Парсим целую часть числа
+            // РџР°СЂСЃРёРј С†РµР»СѓСЋ С‡Р°СЃС‚СЊ С‡РёСЃР»Р°
             if (input.peek() == '0') {
                 read_char();
-                // После 0 в JSON не могут идти другие цифры
+                // РџРѕСЃР»Рµ 0 РІ JSON РЅРµ РјРѕРіСѓС‚ РёРґС‚Рё РґСЂСѓРіРёРµ С†РёС„СЂС‹
             }
             else {
                 read_digits();
             }
 
             bool is_int = true;
-            // Парсим дробную часть числа
+            // РџР°СЂСЃРёРј РґСЂРѕР±РЅСѓСЋ С‡Р°СЃС‚СЊ С‡РёСЃР»Р°
             if (input.peek() == '.') {
                 read_char();
                 read_digits();
                 is_int = false;
             }
 
-            // Парсим экспоненциальную часть числа
+            // РџР°СЂСЃРёРј СЌРєСЃРїРѕРЅРµРЅС†РёР°Р»СЊРЅСѓСЋ С‡Р°СЃС‚СЊ С‡РёСЃР»Р°
             if (int ch = input.peek(); ch == 'e' || ch == 'E') {
                 read_char();
                 if (ch = input.peek(); ch == '+' || ch == '-') {
@@ -186,13 +279,13 @@ namespace json {
 
             try {
                 if (is_int) {
-                    // Сначала пробуем преобразовать строку в int
+                    // РЎРЅР°С‡Р°Р»Р° РїСЂРѕР±СѓРµРј РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊ СЃС‚СЂРѕРєСѓ РІ int
                     try {
                         return std::stoi(parsed_num);
                     }
                     catch (...) {
-                        // В случае неудачи, например, при переполнении
-                        // код ниже попробует преобразовать строку в double
+                        // Р’ СЃР»СѓС‡Р°Рµ РЅРµСѓРґР°С‡Рё, РЅР°РїСЂРёРјРµСЂ, РїСЂРё РїРµСЂРµРїРѕР»РЅРµРЅРёРё
+                        // РєРѕРґ РЅРёР¶Рµ РїРѕРїСЂРѕР±СѓРµС‚ РїСЂРµРѕР±СЂР°Р·РѕРІР°С‚СЊ СЃС‚СЂРѕРєСѓ РІ double
                     }
                 }
                 return std::stod(parsed_num);
@@ -215,12 +308,12 @@ namespace json {
             case '"':
                 return LoadString(input);
             case 't':
-                // Атрибут [[fallthrough]] (провалиться) ничего не делает, и является
-                // подсказкой компилятору и человеку, что здесь программист явно задумывал
-                // разрешить переход к инструкции следующей ветки case, а не случайно забыл
-                // написать break, return или throw.
-                // В данном случае, встретив t или f, переходим к попытке парсинга
-                // литералов true либо false
+                // РђС‚СЂРёР±СѓС‚ [[fallthrough]] (РїСЂРѕРІР°Р»РёС‚СЊСЃСЏ) РЅРёС‡РµРіРѕ РЅРµ РґРµР»Р°РµС‚, Рё СЏРІР»СЏРµС‚СЃСЏ
+                // РїРѕРґСЃРєР°Р·РєРѕР№ РєРѕРјРїРёР»СЏС‚РѕСЂСѓ Рё С‡РµР»РѕРІРµРєСѓ, С‡С‚Рѕ Р·РґРµСЃСЊ РїСЂРѕРіСЂР°РјРјРёСЃС‚ СЏРІРЅРѕ Р·Р°РґСѓРјС‹РІР°Р»
+                // СЂР°Р·СЂРµС€РёС‚СЊ РїРµСЂРµС…РѕРґ Рє РёРЅСЃС‚СЂСѓРєС†РёРё СЃР»РµРґСѓСЋС‰РµР№ РІРµС‚РєРё case, Р° РЅРµ СЃР»СѓС‡Р°Р№РЅРѕ Р·Р°Р±С‹Р»
+                // РЅР°РїРёСЃР°С‚СЊ break, return РёР»Рё throw.
+                // Р’ РґР°РЅРЅРѕРј СЃР»СѓС‡Р°Рµ, РІСЃС‚СЂРµС‚РёРІ t РёР»Рё f, РїРµСЂРµС…РѕРґРёРј Рє РїРѕРїС‹С‚РєРµ РїР°СЂСЃРёРЅРіР°
+                // Р»РёС‚РµСЂР°Р»РѕРІ true Р»РёР±Рѕ false
                 [[fallthrough]];
             case 'f':
                 input.putback(c);
@@ -268,7 +361,7 @@ namespace json {
                     out << "\\n"sv;
                     break;
                 case '"':
-                    // Символы " и \ выводятся как \" или \\, соответственно
+                    // РЎРёРјРІРѕР»С‹ " Рё \ РІС‹РІРѕРґСЏС‚СЃСЏ РєР°Рє \" РёР»Рё \\, СЃРѕРѕС‚РІРµС‚СЃС‚РІРµРЅРЅРѕ
                     [[fallthrough]];
                 case '\\':
                     out.put('\\');
@@ -291,9 +384,9 @@ namespace json {
             ctx.out << "null"sv;
         }
 
-        // В специализаци шаблона PrintValue для типа bool параметр value передаётся
-        // по константной ссылке, как и в основном шаблоне.
-        // В качестве альтернативы можно использовать перегрузку:
+        // Р’ СЃРїРµС†РёР°Р»РёР·Р°С†Рё С€Р°Р±Р»РѕРЅР° PrintValue РґР»СЏ С‚РёРїР° bool РїР°СЂР°РјРµС‚СЂ value РїРµСЂРµРґР°С‘С‚СЃСЏ
+        // РїРѕ РєРѕРЅСЃС‚Р°РЅС‚РЅРѕР№ СЃСЃС‹Р»РєРµ, РєР°Рє Рё РІ РѕСЃРЅРѕРІРЅРѕРј С€Р°Р±Р»РѕРЅРµ.
+        // Р’ РєР°С‡РµСЃС‚РІРµ Р°Р»СЊС‚РµСЂРЅР°С‚РёРІС‹ РјРѕР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ РїРµСЂРµРіСЂСѓР·РєСѓ:
         // void PrintValue(bool value, const PrintContext& ctx);
         template <>
         void PrintValue<bool>(const bool& value, const PrintContext& ctx) {
@@ -361,5 +454,4 @@ namespace json {
     void Print(const Document& doc, std::ostream& output) {
         PrintNode(doc.GetRoot(), PrintContext{ output });
     }
-
 }  // namespace json

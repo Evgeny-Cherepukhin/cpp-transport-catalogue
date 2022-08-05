@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 11 Версия 1.
+// Р§РµСЂРµРїСѓС…РёРЅ Р•РІРіРµРЅРёР№ РЎРµСЂРіРµРµРІРёС‡. РЎРїСЂРёРЅС‚ 12 Р’РµСЂСЃРёСЏ 1.
 #pragma once
 
 #include "domain.h"
@@ -15,13 +15,13 @@ namespace transport::render
     using namespace transport::domains;
     using namespace geo;
 
-    // Переменная для измерения точности.
+    // РџРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ РёР·РјРµСЂРµРЅРёСЏ С‚РѕС‡РЅРѕСЃС‚Рё.
     inline const double EPSILON = 1e-6;
 
-    // Сравнение с заданной точностью.
+    // РЎСЂР°РІРЅРµРЅРёРµ СЃ Р·Р°РґР°РЅРЅРѕР№ С‚РѕС‡РЅРѕСЃС‚СЊСЋ.
     bool IsZero(double value);
 
-    // Структура для хранения установок изображения.
+    // РЎС‚СЂСѓРєС‚СѓСЂР° РґР»СЏ С…СЂР°РЅРµРЅРёСЏ СѓСЃС‚Р°РЅРѕРІРѕРє РёР·РѕР±СЂР°Р¶РµРЅРёСЏ.
     struct RenderSettings {
         RenderSettings() = default;
 
@@ -39,63 +39,63 @@ namespace transport::render
         std::vector<svg::Color> color_palette_{};
     };
 
-    // Класс для переноса координат со сферы на плоскость.
+    // РљР»Р°СЃСЃ РґР»СЏ РїРµСЂРµРЅРѕСЃР° РєРѕРѕСЂРґРёРЅР°С‚ СЃРѕ СЃС„РµСЂС‹ РЅР° РїР»РѕСЃРєРѕСЃС‚СЊ.
     class SphereProjector
     {
     public:
-        // points_begin и points_end задают начало и конец интервала элементов geo::Coordinates
+        // points_begin Рё points_end Р·Р°РґР°СЋС‚ РЅР°С‡Р°Р»Рѕ Рё РєРѕРЅРµС† РёРЅС‚РµСЂРІР°Р»Р° СЌР»РµРјРµРЅС‚РѕРІ geo::Coordinates
         template <typename PointInputIt>
         SphereProjector(PointInputIt points_begin, PointInputIt points_end,
             double max_width, double max_height, double padding)
             : padding_(padding) //
         {
-            // Если точки поверхности сферы не заданы, вычислять нечего
+            // Р•СЃР»Рё С‚РѕС‡РєРё РїРѕРІРµСЂС…РЅРѕСЃС‚Рё СЃС„РµСЂС‹ РЅРµ Р·Р°РґР°РЅС‹, РІС‹С‡РёСЃР»СЏС‚СЊ РЅРµС‡РµРіРѕ
             if (points_begin == points_end) {
                 return;
             }
 
-            // Находим точки с минимальной и максимальной долготой
+            // РќР°С…РѕРґРёРј С‚РѕС‡РєРё СЃ РјРёРЅРёРјР°Р»СЊРЅРѕР№ Рё РјР°РєСЃРёРјР°Р»СЊРЅРѕР№ РґРѕР»РіРѕС‚РѕР№
             const auto [left_it, right_it] = std::minmax_element(
                 points_begin, points_end,
                 [](auto lhs, auto rhs) { return lhs.lng < rhs.lng; });
             min_lon_ = left_it->lng;
             const double max_lon = right_it->lng;
 
-            // Находим точки с минимальной и максимальной широтой
+            // РќР°С…РѕРґРёРј С‚РѕС‡РєРё СЃ РјРёРЅРёРјР°Р»СЊРЅРѕР№ Рё РјР°РєСЃРёРјР°Р»СЊРЅРѕР№ С€РёСЂРѕС‚РѕР№
             const auto [bottom_it, top_it] = std::minmax_element(
                 points_begin, points_end,
                 [](auto lhs, auto rhs) { return lhs.lat < rhs.lat; });
             const double min_lat = bottom_it->lat;
             max_lat_ = top_it->lat;
 
-            // Вычисляем коэффициент масштабирования вдоль координаты x
+            // Р’С‹С‡РёСЃР»СЏРµРј РєРѕСЌС„С„РёС†РёРµРЅС‚ РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ РІРґРѕР»СЊ РєРѕРѕСЂРґРёРЅР°С‚С‹ x
             std::optional<double> width_zoom;
             if (!IsZero(max_lon - min_lon_)) {
                 width_zoom = (max_width - 2 * padding) / (max_lon - min_lon_);
             }
 
-            // Вычисляем коэффициент масштабирования вдоль координаты y
+            // Р’С‹С‡РёСЃР»СЏРµРј РєРѕСЌС„С„РёС†РёРµРЅС‚ РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ РІРґРѕР»СЊ РєРѕРѕСЂРґРёРЅР°С‚С‹ y
             std::optional<double> height_zoom;
             if (!IsZero(max_lat_ - min_lat)) {
                 height_zoom = (max_height - 2 * padding) / (max_lat_ - min_lat);
             }
 
             if (width_zoom && height_zoom) {
-                // Коэффициенты масштабирования по ширине и высоте ненулевые,
-                // берём минимальный из них
+                // РљРѕСЌС„С„РёС†РёРµРЅС‚С‹ РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ РїРѕ С€РёСЂРёРЅРµ Рё РІС‹СЃРѕС‚Рµ РЅРµРЅСѓР»РµРІС‹Рµ,
+                // Р±РµСЂС‘Рј РјРёРЅРёРјР°Р»СЊРЅС‹Р№ РёР· РЅРёС…
                 zoom_coeff_ = std::min(*width_zoom, *height_zoom);
             }
             else if (width_zoom) {
-                // Коэффициент масштабирования по ширине ненулевой, используем его
+                // РљРѕСЌС„С„РёС†РёРµРЅС‚ РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ РїРѕ С€РёСЂРёРЅРµ РЅРµРЅСѓР»РµРІРѕР№, РёСЃРїРѕР»СЊР·СѓРµРј РµРіРѕ
                 zoom_coeff_ = *width_zoom;
             }
             else if (height_zoom) {
-                // Коэффициент масштабирования по высоте ненулевой, используем его
+                // РљРѕСЌС„С„РёС†РёРµРЅС‚ РјР°СЃС€С‚Р°Р±РёСЂРѕРІР°РЅРёСЏ РїРѕ РІС‹СЃРѕС‚Рµ РЅРµРЅСѓР»РµРІРѕР№, РёСЃРїРѕР»СЊР·СѓРµРј РµРіРѕ
                 zoom_coeff_ = *height_zoom;
             }
         }
 
-        // Проецирует широту и долготу в координаты внутри SVG-изображения
+        // РџСЂРѕРµС†РёСЂСѓРµС‚ С€РёСЂРѕС‚Сѓ Рё РґРѕР»РіРѕС‚Сѓ РІ РєРѕРѕСЂРґРёРЅР°С‚С‹ РІРЅСѓС‚СЂРё SVG-РёР·РѕР±СЂР°Р¶РµРЅРёСЏ
         svg::Point operator()(geo::Coordinates coords) const {
             return {
                 (coords.lng - min_lon_) * zoom_coeff_ + padding_,
@@ -110,31 +110,34 @@ namespace transport::render
         double zoom_coeff_ = 0.0;
     };
 
-    // Класс "Рисователь Карты".
+    // РљР»Р°СЃСЃ "Р РёСЃРѕРІР°С‚РµР»СЊ РљР°СЂС‚С‹".
     class MapRenderer
     {
     public:
-        // Конструктор.
+        // РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ.
         MapRenderer(
             std::map<std::string_view, std::shared_ptr<Stop>>& stops_unique,
             std::map < std::string_view, std::shared_ptr<Bus>>& buses_unique,
             RenderSettings setings
         );
 
-        // Строковая переменная для хранения svg-данных для отрисовки карты
+        // РЎС‚СЂРѕРєРѕРІР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ С…СЂР°РЅРµРЅРёСЏ svg-РґР°РЅРЅС‹С… РґР»СЏ РѕС‚СЂРёСЃРѕРІРєРё РєР°СЂС‚С‹
         std::string RenderMap() const;
 
     private:
-        // Рисователь маршрута(линии).
+        // Р РёСЃРѕРІР°С‚РµР»СЊ РјР°СЂС€СЂСѓС‚Р°(Р»РёРЅРёРё).
         void CreateRoutes(svg::Document& result) const;
-        // Рисователь имени(номера) маршрута.
+
+        // Р РёСЃРѕРІР°С‚РµР»СЊ РёРјРµРЅРё(РЅРѕРјРµСЂР°) РјР°СЂС€СЂСѓС‚Р°.
         void CreateRouteNumber(svg::Document& result) const;
-        // Рисователь остановок(точек) на маршрутах. 
+
+        // Р РёСЃРѕРІР°С‚РµР»СЊ РѕСЃС‚Р°РЅРѕРІРѕРє(С‚РѕС‡РµРє) РЅР° РјР°СЂС€СЂСѓС‚Р°С…. 
         void CreateStopPoint(svg::Document& result) const;
-        // Рисователь названия остановки.
+
+        // Р РёСЃРѕРІР°С‚РµР»СЊ РЅР°Р·РІР°РЅРёСЏ РѕСЃС‚Р°РЅРѕРІРєРё.
         void CreateStopName(svg::Document& result) const;
 
-        // Данные для создания и отрисовки карты.
+        // Р”Р°РЅРЅС‹Рµ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ Рё РѕС‚СЂРёСЃРѕРІРєРё РєР°СЂС‚С‹.
         const std::map<std::string_view, std::shared_ptr<Stop>>& stops_unique_;
         const std::map<std::string_view, std::shared_ptr<Bus>>& buses_unique_;
         const RenderSettings settings_;

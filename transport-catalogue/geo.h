@@ -1,11 +1,11 @@
-// Черепухин Евгений Сергеевич. Сплит 11 Версия 1. 
+// Р§РµСЂРµРїСѓС…РёРЅ Р•РІРіРµРЅРёР№ РЎРµСЂРіРµРµРІРёС‡. РЎРїСЂРёРЅС‚ 12 Р’РµСЂСЃРёСЏ 1. 
 #pragma once
 
 namespace geo {
 
     struct Coordinates {
-        double lat; // Широта
-        double lng; // Долгота
+        double lat; // РЁРёСЂРѕС‚Р°
+        double lng; // Р”РѕР»РіРѕС‚Р°
         bool operator==(const Coordinates& other) const {
             return lat == other.lat && lng == other.lng;
         }

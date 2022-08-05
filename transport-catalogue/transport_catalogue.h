@@ -1,9 +1,10 @@
-// Черепухин Евгений Сергеевич. Сплит 11 Версия 1.
+// Р§РµСЂРµРїСѓС…РёРЅ Р•РІРіРµРЅРёР№ РЎРµСЂРіРµРµРІРёС‡. РЎРїСЂРёРЅС‚ 12 Р’РµСЂСЃРёСЏ 1.
 #pragma once
 
 #include "domain.h"
 #include "geo.h"
 #include "map_renderer.h"
+#include "transport_router.h"
 
 #include <string>
 
@@ -11,63 +12,72 @@ namespace transport::catalogue
 {
 	using namespace transport::domains;
 	using namespace transport::render;
+	using namespace transport::router;
 
 	class TransportCatalogue
 	{
 	public:
 		TransportCatalogue() = default;
 
-		// Конструктор транспортного каталога. Заполняет словари остановок и маршрутов по соответствующим векторам.
+		// РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ С‚СЂР°РЅСЃРїРѕСЂС‚РЅРѕРіРѕ РєР°С‚Р°Р»РѕРіР°. Р—Р°РїРѕР»РЅСЏРµС‚ СЃР»РѕРІР°СЂРё РѕСЃС‚Р°РЅРѕРІРѕРє Рё РјР°СЂС€СЂСѓС‚РѕРІ РїРѕ СЃРѕРѕС‚РІРµС‚СЃС‚РІСѓСЋС‰РёРј РІРµРєС‚РѕСЂР°Рј.
 		TransportCatalogue(
 			std::vector<std::shared_ptr<Stop>>& stops,
 			std::vector<std::shared_ptr<Bus>>& buses,
-			RenderSettings render_settings
+			RenderSettings render_settings,
+			RoutingSettings router_settings
 		);
-		// Деструктор.
+		// Р”РµСЃС‚СЂСѓРєС‚РѕСЂ.
 		~TransportCatalogue() {}
 
-		// Возвращает информацию об остановке.
+		// Р’РѕР·РІСЂР°С‰Р°РµС‚ РёРЅС„РѕСЂРјР°С†РёСЋ РѕР± РѕСЃС‚Р°РЅРѕРІРєРµ.
 		std::optional<Stop> GetStopInfo(std::string_view stop_name);
 
-		// Возвращает нформацию о маршрутах.
+		// Р’РѕР·РІСЂР°С‰Р°РµС‚ РЅС„РѕСЂРјР°С†РёСЋ Рѕ РјР°СЂС€СЂСѓС‚Р°С….
 		std::optional<Bus> GetBusInfo(std::string_view bus_name);
 
-		// Возвращает указатель на остановку по имени.
+		// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РѕСЃС‚Р°РЅРѕРІРєСѓ РїРѕ РёРјРµРЅРё.
 		std::shared_ptr<Stop> StopByName(std::string_view name);
 
-		// Возвращает указатель на маршрут по имени.
+		// Р’РѕР·РІСЂР°С‰Р°РµС‚ СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РјР°СЂС€СЂСѓС‚ РїРѕ РёРјРµРЅРё.
 		std::shared_ptr<Bus> BusByName(std::string_view name);
 
-		// Возвращает ссылку на информацию на построение карты.
+		// Р’РѕР·РІСЂР°С‰Р°РµС‚ СЃСЃС‹Р»РєСѓ РЅР° РёРЅС„РѕСЂРјР°С†РёСЋ РЅР° РїРѕСЃС‚СЂРѕРµРЅРёРµ РєР°СЂС‚С‹.
 		const std::string& GetMap();
+
+		std::shared_ptr<std::vector<RouteItem>> FindRouteInBase(std::string_view from, std::string_view to);
 
 
 	private:
-		// Заполняет словарь остановок. 
+		// Р—Р°РїРѕР»РЅСЏРµС‚ СЃР»РѕРІР°СЂСЊ РѕСЃС‚Р°РЅРѕРІРѕРє. 
 		void MakeStopsMap(std::vector<std::shared_ptr<Stop>>& stops);
 
-		// Заполняет словарь маршрутов.
+		// Р—Р°РїРѕР»РЅСЏРµС‚ СЃР»РѕРІР°СЂСЊ РјР°СЂС€СЂСѓС‚РѕРІ.
 		void MakeBusesMap(std::vector<std::shared_ptr<Bus>>& buses);
 
-		// Рисует карту маршрутов.
+		// Р РёСЃСѓРµС‚ РєР°СЂС‚Сѓ РјР°СЂС€СЂСѓС‚РѕРІ.
 		void MakeRenderMap(std::map<std::string_view, std::shared_ptr<Stop>>& stops, std::map<std::string_view, std::shared_ptr<Bus>>& buses, RenderSettings& render_settings);
 
-		// Считает количество уникальных остановок маршрута.
+		// РњР°СЂС€СЂСѓС‚РёР·Р°С‚РѕСЂ СЃРѕСЃС‚Р°РІР»СЏРµС‚ РјР°СЂС€СЂСѓС‚ РјРµР¶РґСѓ РѕСЃС‚Р°РЅРѕРІРєР°РјРё.
+		void MakeRouter(std::map<std::string_view, std::shared_ptr<Stop>>& stops, std::map<std::string_view, std::shared_ptr<Bus>>& buses, RoutingSettings router_settings);
+
+		// РЎС‡РёС‚Р°РµС‚ РєРѕР»РёС‡РµСЃС‚РІРѕ СѓРЅРёРєР°Р»СЊРЅС‹С… РѕСЃС‚Р°РЅРѕРІРѕРє РјР°СЂС€СЂСѓС‚Р°.
 		void ComputeUniqueStops(std::shared_ptr<Bus>& bus);
 
-		// Считает реальную дистанцию маршрута.
+		// РЎС‡РёС‚Р°РµС‚ СЂРµР°Р»СЊРЅСѓСЋ РґРёСЃС‚Р°РЅС†РёСЋ РјР°СЂС€СЂСѓС‚Р°.
 		void ComputeRealRouteDistance(std::shared_ptr<Bus>& bus);
 
-		// Рассчитывает кривизну маршрута(отношение реальной длины маршрута к географическому расстоянию)
+		// Р Р°СЃСЃС‡РёС‚С‹РІР°РµС‚ РєСЂРёРІРёР·РЅСѓ РјР°СЂС€СЂСѓС‚Р°(РѕС‚РЅРѕС€РµРЅРёРµ СЂРµР°Р»СЊРЅРѕР№ РґР»РёРЅС‹ РјР°СЂС€СЂСѓС‚Р° Рє РіРµРѕРіСЂР°С„РёС‡РµСЃРєРѕРјСѓ СЂР°СЃСЃС‚РѕСЏРЅРёСЋ)
 		void ComputeCurvature(std::shared_ptr<Bus>& bus);
 
-		// Подсчёт общего количества остановок на маршруте
+		// РџРѕРґСЃС‡С‘С‚ РѕР±С‰РµРіРѕ РєРѕР»РёС‡РµСЃС‚РІР° РѕСЃС‚Р°РЅРѕРІРѕРє РЅР° РјР°СЂС€СЂСѓС‚Рµ
 		void CalculateStopsOnRoute(std::shared_ptr<Bus>& bus);
-		// Данные об остановках храним в словарях остановок и маршрутов. (Имя - указатель на данные).
+		// Р”Р°РЅРЅС‹Рµ РѕР± РѕСЃС‚Р°РЅРѕРІРєР°С… С…СЂР°РЅРёРј РІ СЃР»РѕРІР°СЂСЏС… РѕСЃС‚Р°РЅРѕРІРѕРє Рё РјР°СЂС€СЂСѓС‚РѕРІ. (РРјСЏ - СѓРєР°Р·Р°С‚РµР»СЊ РЅР° РґР°РЅРЅС‹Рµ).
 		std::map<std::string_view, std::shared_ptr<Stop>> stops_;
 		std::map<std::string_view, std::shared_ptr<Bus>> buses_;
-		// Данные необходимые для отрисовки карты.
+		// Р”Р°РЅРЅС‹Рµ РЅРµРѕР±С…РѕРґРёРјС‹Рµ РґР»СЏ РѕС‚СЂРёСЃРѕРІРєРё РєР°СЂС‚С‹.
 		std::unique_ptr<MapRenderer> render_;
 		std::string map_;
+		// Р”Р°РЅРЅС‹Рµ РґР»СЏ РїРѕСЃС‚СЂРѕРµРЅРёСЏ РјР°СЂС€СЂСѓС‚РѕРІ.
+		std::unique_ptr<TransportRouter>router_;
 	};
 } // namespace transport::catalogue

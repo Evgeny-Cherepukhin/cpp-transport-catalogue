@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 11 Версия 1. 
+// Р§РµСЂРµРїСѓС…РёРЅ Р•РІРіРµРЅРёР№ РЎРµСЂРіРµРµРІРёС‡. РЎРїСЂРёРЅС‚ 12 Р’РµСЂСЃРёСЏ 1. 
 #include "request_handler.h"
 
 namespace transport::response {
@@ -27,6 +27,11 @@ namespace transport::response {
 			else if (type == "Map"s) {
 
 				request.type = RequestType::MAP;
+			}
+			else if (type == "Route"s) {
+				request.from = node_map.at("from"s).AsString();
+				request.to = node_map.at("to"s).AsString();
+				request.type = RequestType::ROUTER;
 			}
 			else {
 				throw json::ParsingError("Request invalid"s);
@@ -58,6 +63,15 @@ namespace transport::response {
 				auto map_render_data = catalogue_.GetMap();
 				responses_.push_back(CreateJsonResponseMap(request.id, map_render_data));
 			}break;
+			case RequestType::ROUTER: {
+				if (auto graph_router = catalogue_.FindRouteInBase(request.from, request.to); graph_router) {
+					responses_.push_back(CreateJsonResponseRoute(request.id, graph_router).AsDict());
+				}
+				else {
+					responses_.push_back(CreateJsonResponseError(request.id));
+				}
+
+			} break;
 			default:
 				throw std::logic_error("unknown type");
 			}
@@ -74,7 +88,7 @@ namespace transport::response {
 			Key("error_message"s).Value("not found"s).
 			Key("request_id"s).Value(request_id).
 			EndDict().
-			Build();		
+			Build();
 	}
 
 	json::Node RequestHelper::CreateJsonResponseStop(const int request_id, const domains::Stop& data) {
@@ -111,5 +125,35 @@ namespace transport::response {
 			Key("request_id"s).Value(request_id).
 			EndDict().
 			Build();
+	}
+
+	json::Node RequestHelper::CreateJsonResponseRoute(const int request_id, std::shared_ptr<std::vector<RouteItem>> route) {
+
+		json::Builder builder_;
+		builder_.StartArray();
+		double total_time = 0.0;
+		for (auto it = route->begin(); it != route->end(); ++it) {
+			total_time += (it->wait_time + it->trip_time);
+			builder_.StartDict()
+				.Key("type"s).Value("Wait"s)
+				.Key("stop_name"s).Value(it->start_stop_idx->name)
+				.Key("time"s).Value(it->wait_time)
+				.EndDict()
+
+				.StartDict()
+				.Key("type"s).Value("Bus"s)
+				.Key("bus"s).Value(it->bus->name)
+				.Key("span_count"s).Value(it->stop_count)
+				.Key("time"s).Value(it->trip_time)
+				.EndDict();
+		}
+		json::Node x = builder_.EndArray().Build();
+
+		return json::Builder{}
+			.StartDict()
+			.Key("request_id"s).Value(request_id)
+			.Key("total_time"s).Value(total_time )
+			.Key("items"s).Value(x.AsArray())
+			.EndDict().Build();
 	}
 }

@@ -1,4 +1,4 @@
-// Черепухин Евгений Сергеевич. Сплит 11 Версия 1.
+// Р§РµСЂРµРїСѓС…РёРЅ Р•РІРіРµРЅРёР№ РЎРµСЂРіРµРµРІРёС‡. РЎРїСЂРёРЅС‚ 12 Р’РµСЂСЃРёСЏ 1.
 #include "json_reader.h"
 
 namespace json::reader
@@ -88,6 +88,16 @@ namespace json::reader
 		for (const auto& color : render_settings.at("color_palette"s).AsArray()) {
 			result.color_palette_.push_back(ParseColor(color));
 		}
+		return result;
+	}
+
+	RoutingSettings JsonReader::ParseRouterSetting(const json::Dict& router_settings) {
+
+		RoutingSettings result(
+			router_settings.at("bus_wait_time"s).AsInt(),
+			router_settings.at("bus_velocity"s).AsDouble()
+		);
+
 		return result;
 	}
 }

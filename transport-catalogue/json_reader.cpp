@@ -97,7 +97,6 @@ namespace json::reader
 			router_settings.at("bus_wait_time"s).AsInt(),
 			router_settings.at("bus_velocity"s).AsDouble()
 		);
-
 		return result;
 	}
 }

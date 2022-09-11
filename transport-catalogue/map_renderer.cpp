@@ -1,5 +1,6 @@
 // Черепухин Евгений Сергеевич. Спринт 12 Версия 1.
 #include "map_renderer.h"
+#include "serialization.h"
 
 namespace transport::render
 {
@@ -185,5 +186,50 @@ namespace transport::render
 				result.Add(number);
 			}
 		}
+	}
+
+	void MapRenderer::SerializeSettings(TCProto::RenderSettings& proto) {
+		proto.set_width(settings_.width_);		
+		proto.set_height(settings_.height_);
+		proto.set_padding(settings_.padding_);
+		proto.set_stop_radius(settings_.stop_radius_);
+		proto.set_line_width(settings_.line_width_);
+		proto.set_bus_label_font_size(settings_.bus_label_font_size_);
+		proto.set_underlayer_width(settings_.underlayer_width_);
+		proto.set_stop_label_font_size(settings_.stop_label_font_size_);
+		proto.set_bus_label_offset_x(settings_.bus_label_offset_.x);
+		proto.set_bus_label_offset_y(settings_.bus_label_offset_.y);
+		proto.set_stop_label_offset_x(settings_.stop_label_offset_.x);
+		proto.set_stop_label_offset_y(settings_.stop_label_offset_.y);
+
+		
+		svg::SerializeColor(settings_.underlayer_color_, *proto.mutable_underlayer_color());
+
+		for (const svg::Color& color : settings_.color_palette_) {
+			svg::SerializeColor(color, *proto.add_palette());
+		}
+
+	}
+
+	RenderSettings MapRenderer::DeserializeSettings(const TCProto::RenderSettings& proto) {
+		RenderSettings settings;
+		settings.width_ = proto.width();
+		settings.height_ = proto.height();
+		settings.padding_ = proto.padding();
+		settings.line_width_ = proto.line_width();
+		settings.stop_radius_ = proto.stop_radius();		
+		settings.bus_label_font_size_ = proto.bus_label_font_size();
+		settings.underlayer_width_ = proto.underlayer_width();
+		settings.stop_label_font_size_ = proto.stop_label_font_size();
+		settings.bus_label_offset_ = { proto.bus_label_offset_x(), proto.bus_label_offset_y() };
+		settings.stop_label_offset_ = { proto.stop_label_offset_x(), proto.stop_label_offset_y() };
+
+		settings.underlayer_color_ = svg::DeserializeColor(proto.underlayer_color());
+
+		settings.color_palette_.reserve(proto.palette_size());
+		for (const auto& color : proto.palette()) {
+			settings.color_palette_.push_back(svg::DeserializeColor(color));
+		}
+		return settings;
 	}
 }

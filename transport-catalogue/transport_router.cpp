@@ -2,11 +2,22 @@
 #include "transport_router.h"
 
 #include <iostream>
+
 namespace transport::router {
 
 	using namespace transport::domains; 
+
 	// Коэффициент для перевода скорости из км/ч в м/мин.
 	static const double  SPEED_FACTOR_M_PER_MIN = 100.0/6.0;
+
+	void TransportRouter::SerializeSettings(TCProto::RoutingSettings& proto) {
+		proto.set_bus_wait_time(settings_.bus_wait_time);
+		proto.set_bus_velocity(settings_.bus_velocity);
+	}
+
+	RoutingSettings TransportRouter::DeserializeSettings(const TCProto::RoutingSettings& proto) {
+		return { proto.bus_wait_time(), proto.bus_velocity() };
+	}
 
 	TransportRouter::TransportRouter(
 		std::map<std::string_view, std::shared_ptr<Stop>>& stops,
@@ -114,4 +125,52 @@ namespace transport::router {
 	const RoutingSettings& TransportRouter::GetSettings() const {
 		return settings_;
 	}   
+
+	void TransportRouter::SerializeData(TCProto::TransportRouter& proto) const {
+		graph_.Serialize(*proto.mutable_graph());			
+		search_in_graph_->Serialize(*proto.mutable_router());
+
+		for (const auto& item : graph_edges_) {
+			TCProto::RouteItem& proto_edge = *proto.add_graph_edges();
+			proto_edge.set_start_stop(item.start_stop_idx->name);
+			proto_edge.set_finish_stop(item.finish_stop_idx->name);
+			proto_edge.set_bus(item.bus->name);
+			proto_edge.set_stop_count(item.stop_count);
+			proto_edge.set_trip_time(item.trip_time);
+			proto_edge.set_wait_time(item.wait_time);
+		}
+
+		for (const auto& [name, value] : graph_vertexes_) {
+			TCProto::GraphVertexes& proto_vertex = *proto.add_graph_vertexes();
+			proto_vertex.set_stop_name(name->name);
+			proto_vertex.set_index(value);
+		}
+
+	}
+
+	void TransportRouter::DeserializeData(const TCProto::TransportRouter& proto) {
+		graph_ = graph::DirectedWeightedGraph<double>::Deserialize(proto.graph());
+
+		for (const auto& proto_edge : proto.graph_edges()) {
+			RouteItem tmp;
+			tmp.start_stop_idx = stops_.at(proto_edge.start_stop());
+			tmp.finish_stop_idx = stops_.at(proto_edge.finish_stop());
+			tmp.bus = buses_.at(proto_edge.bus());
+			tmp.stop_count = proto_edge.stop_count();
+			tmp.wait_time = proto_edge.wait_time();
+			tmp.trip_time = proto_edge.trip_time();
+
+			graph_edges_.push_back(std::move(tmp));
+
+		}
+
+		for (const auto& proto_vertex : proto.graph_vertexes()) {
+			graph_vertexes_[stops_.at(proto_vertex.stop_name())] = proto_vertex.index();
+		}
+
+		search_in_graph_ = graph::Router<double>::Deserialize(proto.router(), graph_);
+	}
+
+
+
 }

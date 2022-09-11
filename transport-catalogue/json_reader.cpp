@@ -5,7 +5,7 @@ namespace json::reader
 {
 	using namespace std;
 
-	std::vector<std::shared_ptr<Stop>> JsonReader::ParseStop(const json::Array& base_requests) {
+	std::vector<std::shared_ptr<Stop>> ParseStop(const json::Array& base_requests) {
 		std::vector<std::shared_ptr<Stop>> result;
 		for (const auto& request : base_requests) {
 			const std::string& type = request.AsDict().at("type"s).AsString();
@@ -18,7 +18,7 @@ namespace json::reader
 		return result;
 	}
 
-	std::vector<std::shared_ptr<Bus>> JsonReader::ParseBus(const json::Array& base_requests) {
+	std::vector<std::shared_ptr<Bus>> ParseBus(const json::Array& base_requests) {
 		std::vector<std::shared_ptr<Bus>> result;
 		for (const auto& request : base_requests) {
 			const std::string& type = request.AsDict().at("type"s).AsString();
@@ -31,7 +31,7 @@ namespace json::reader
 		return result;
 	}
 
-	svg::Color JsonReader::ParseColor(const json::Node& node) {
+	svg::Color ParseColor(const json::Node& node) {
 		if (node.IsString()) {
 			return svg::Color{ node.AsString() };
 		}
@@ -63,7 +63,7 @@ namespace json::reader
 		return svg::Color{};
 	}
 
-	transport::render::RenderSettings JsonReader::ParseRenderSetting(const json::Dict& render_settings) {
+	transport::render::RenderSettings ParseRenderSetting(const json::Dict& render_settings) {
 		transport::render::RenderSettings result;
 
 		result.width_ = render_settings.at("width"s).AsDouble();
@@ -91,7 +91,7 @@ namespace json::reader
 		return result;
 	}
 
-	RoutingSettings JsonReader::ParseRouterSetting(const json::Dict& router_settings) {
+	RoutingSettings ParseRouterSetting(const json::Dict& router_settings) {
 
 		RoutingSettings result(
 			router_settings.at("bus_wait_time"s).AsInt(),

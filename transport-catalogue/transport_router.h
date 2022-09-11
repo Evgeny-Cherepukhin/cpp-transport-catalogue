@@ -1,7 +1,9 @@
-// Черепухин Евгений Сергеевич. Спринт 12 Версия 1. 
+// Черепухин Евгений Сергеевич. Спринт 14 Версия 1. 
 #pragma once
 #include "domain.h"
 #include "router.h"
+
+#include "transport_router.pb.h"
 
 #include <optional>
 #include <iostream>
@@ -81,6 +83,12 @@ namespace transport::router {
 
 		// Ищет оптимальный маршрут от from остановки from до остановки to.
 		std::shared_ptr<std::vector<RouteItem>> FindRoute(const std::string_view from, const std::string_view to);               
+
+		void SerializeData(TCProto::TransportRouter& proto) const;
+		void DeserializeData(const TCProto::TransportRouter& proto);
+
+		void SerializeSettings(TCProto::RoutingSettings& proto);
+		static RoutingSettings DeserializeSettings(const TCProto::RoutingSettings& proto);
 
 	private:
 		const std::map<std::string_view, std::shared_ptr<Stop>>& stops_;

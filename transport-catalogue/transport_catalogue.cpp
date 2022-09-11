@@ -1,18 +1,21 @@
 // Черепухин Евгений Сергеевич. Спринт 12 Версия 1.
 #include "transport_catalogue.h"
 
+#include "transport_catalogue.pb.h"
+
 namespace transport::catalogue
 {
 	TransportCatalogue::TransportCatalogue(
 		std::vector<std::shared_ptr<Stop>>& stops,
 		std::vector<std::shared_ptr<Bus>>& buses,
 		RenderSettings render_settings,
-		RoutingSettings router_settings
-	) {
+		RoutingSettings router_settings	
+	)
+	{
 		MakeStopsMap(stops);
 		MakeBusesMap(buses);
 		MakeRenderMap(stops_, buses_, render_settings);
-		//MakeRouter(stops_, buses_, router_settings);
+		MakeRouter(stops_, buses_, router_settings);
 		router_ = std::make_unique<TransportRouter>(stops_, buses_, router_settings);
 		router_->BuildGraph();
 	}
@@ -37,10 +40,11 @@ namespace transport::catalogue
 		render_ = std::make_unique<MapRenderer>(stops, buses, render_settings);
 		map_ = render_->RenderMap();
 	}
-	/*void TransportCatalogue::MakeRouter(std::map<std::string_view, std::shared_ptr<Stop>>& stops, std::map<std::string_view, std::shared_ptr<Bus>>& buses, RoutingSettings router_settings) {
+
+	void TransportCatalogue::MakeRouter(std::map<std::string_view, std::shared_ptr<Stop>>& stops, std::map<std::string_view, std::shared_ptr<Bus>>& buses, RoutingSettings router_settings) {
 		router_ = std::make_unique<TransportRouter>(stops, buses, router_settings);
 		router_->BuildGraph();
-	}*/
+	}
 	
 
 	const std::string& TransportCatalogue::GetMap() {
@@ -121,4 +125,98 @@ namespace transport::catalogue
 		if (it == buses_.end()) return nullptr;
 		return it->second;
 	}
+
+	std::string TransportCatalogue::Serialize() const {
+		
+		TCProto::TransportCatalogue db_proto;
+		
+		for (const auto& [name, stop] : stops_) {
+			TCProto::Stop& proto_stop = *db_proto.add_map_stops();
+			proto_stop.set_name(stop->name);
+			proto_stop.set_lat(stop->coordinates.lat);
+			proto_stop.set_lng(stop->coordinates.lng);
+
+			for (const std::string_view& bus_name : stop->buses) {
+				proto_stop.add_bus_name(std::string(bus_name));
+			}
+
+			for (const auto& [name, len] : stop->stops_distances) {
+				auto& road = *proto_stop.add_road_distanse();
+				road.set_name(name);
+				road.set_len(len);
+			}
+		}
+
+		for (const auto& [name, bus] : buses_) {
+			TCProto::Bus& proto_bus = *db_proto.add_map_buses();
+			proto_bus.set_name(bus->name);
+			proto_bus.set_is_roundtrip(bus->is_roundtrip);
+			proto_bus.set_stop_count(bus->stop_count);
+			proto_bus.set_unique_stop_count(bus->unique_stop_count);
+			proto_bus.set_route_length(bus->route_length);
+			proto_bus.set_curvature(bus->curvature);
+
+			for (const std::string& stop : bus->stops) {
+				proto_bus.add_stops_name(stop);
+			}
+		}
+
+		db_proto.set_catalogue_map(map_);
+		
+		render_->SerializeSettings(*db_proto.mutable_renderer_settings());
+
+		router_->SerializeSettings(*db_proto.mutable_routing_settings());
+		router_->SerializeData(*db_proto.mutable_router());
+
+		return db_proto.SerializeAsString();
+	}
+
+	void TransportCatalogue::Deserialize(const std::string& data) {
+		TCProto::TransportCatalogue proto;
+		assert(proto.ParseFromString(data));
+
+		
+		for (const TCProto::Stop& proto_stop : proto.map_stops()) {
+			Stop stop;
+			stop.name = proto_stop.name();
+			stop.coordinates = { proto_stop.lat(), proto_stop.lng() };
+
+			for (const auto& name : proto_stop.bus_name()) {
+				stop.buses.insert(name);
+			}
+
+			for (const auto& road : proto_stop.road_distanse()) {
+				stop.stops_distances[road.name()] = road.len();
+			}
+
+			auto ptr = std::make_shared<Stop>(stop);
+			stops_[ptr->name] = ptr;
+		}
+
+		for (const TCProto::Bus& proto_bus : proto.map_buses()) {
+			Bus bus;
+
+			bus.name = proto_bus.name();
+			bus.is_roundtrip = proto_bus.is_roundtrip();
+			bus.stop_count = proto_bus.stop_count();
+			bus.unique_stop_count = proto_bus.unique_stop_count();
+			bus.route_length = proto_bus.route_length();
+			bus.curvature = proto_bus.curvature();
+
+			for (const auto& name : proto_bus.stops_name()) {
+				bus.stops.push_back(name);
+			}
+
+			auto ptr = std::make_shared<Bus>(bus);
+			buses_[ptr->name] = ptr;
+		}	
+
+		render_ = std::make_unique<MapRenderer>(stops_, buses_, MapRenderer::DeserializeSettings(proto.renderer_settings()));
+		map_ = proto.catalogue_map();
+
+		router_ = std::make_unique<TransportRouter>(stops_, buses_, TransportRouter::DeserializeSettings(proto.routing_settings()));
+		router_->DeserializeData(proto.router());
+
+	}
 }
+

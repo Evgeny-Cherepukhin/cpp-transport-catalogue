@@ -1,10 +1,12 @@
-// Черепухин Евгений Сергеевич. Спринт 12 Версия 1.
+// Черепухин Евгений Сергеевич. Спринт 14 Версия 1.
 #pragma once
 
 #include "domain.h"
 #include "geo.h"
 #include "svg.h"
 #include "json.h"
+
+#include "map_renderer.pb.h"
 
 #include <algorithm>
 #include <sstream>
@@ -47,7 +49,7 @@ namespace transport::render
 		template <typename PointInputIt>
 		SphereProjector(PointInputIt points_begin, PointInputIt points_end,
 			double max_width, double max_height, double padding)
-			: padding_(padding) //
+			: padding_(padding) 
 		{
 			// Если точки поверхности сферы не заданы, вычислять нечего
 			if (points_begin == points_end) {
@@ -123,6 +125,9 @@ namespace transport::render
 
 		// Строковая переменная для хранения svg-данных для отрисовки карты
 		std::string RenderMap() const;
+
+		void SerializeSettings(TCProto::RenderSettings& proto);
+		static RenderSettings DeserializeSettings(const TCProto::RenderSettings& proto);
 
 	private:
 		// Рисователь маршрута(линии).

@@ -1,12 +1,15 @@
-// Черепухин Евгений Сергеевич. Спринт 12 Версия 1.
+// Черепухин Евгений Сергеевич. Спринт 14 Версия 1.
 #pragma once
 
 #include "domain.h"
 #include "geo.h"
+#include "json.h"
 #include "map_renderer.h"
 #include "transport_router.h"
 
 #include <string>
+#include <fstream>
+#include <iostream>
 
 namespace transport::catalogue
 {
@@ -46,6 +49,10 @@ namespace transport::catalogue
 
 		std::shared_ptr<std::vector<RouteItem>> FindRouteInBase(std::string_view from, std::string_view to);
 
+		// Методы сериализации и десериализации транспортного каталога.
+		std::string Serialize() const;
+
+		void Deserialize(const std::string& data);
 
 	private:
 		// Заполняет словарь остановок. 
@@ -71,6 +78,9 @@ namespace transport::catalogue
 
 		// Подсчёт общего количества остановок на маршруте
 		void CalculateStopsOnRoute(std::shared_ptr<Bus>& bus);
+
+		// Настройки сериализации.
+		//std::map<std::string_view, std::string_view> serialization_settings_;
 		// Данные об остановках храним в словарях остановок и маршрутов. (Имя - указатель на данные).
 		std::map<std::string_view, std::shared_ptr<Stop>> stops_;
 		std::map<std::string_view, std::shared_ptr<Bus>> buses_;

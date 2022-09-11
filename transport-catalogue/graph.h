@@ -1,7 +1,9 @@
-// Черепухин Евгений Сергеевич. Спринт 12 Версия 1. 
+// Черепухин Евгений Сергеевич. Спринт 14 Версия 1. 
 #pragma once
 
 #include "ranges.h"
+
+#include "graph.pb.h"
 
 #include <cstdlib>
 #include <vector>
@@ -33,6 +35,9 @@ namespace graph {
         size_t GetEdgeCount() const;
         const Edge<Weight>& GetEdge(EdgeId edge_id) const;
         IncidentEdgesRange GetIncidentEdges(VertexId vertex) const;
+
+        void Serialize(GraphProto::DirectedWeightedGraph& proto) const;
+        static DirectedWeightedGraph Deserialize(const GraphProto::DirectedWeightedGraph& proto);
 
     private:
         std::vector<Edge<Weight>> edges_;
@@ -72,4 +77,47 @@ namespace graph {
         DirectedWeightedGraph<Weight>::GetIncidentEdges(VertexId vertex) const {
         return ranges::AsRange(incidence_lists_.at(vertex));
     }
+
+    template <typename Weight>
+    void DirectedWeightedGraph<Weight>::Serialize(GraphProto::DirectedWeightedGraph& proto) const {
+        for (const auto& edge : edges_) {
+            auto& edge_proto = *proto.add_edges();
+            edge_proto.set_from(edge.from);
+            edge_proto.set_to(edge.to);
+            edge_proto.set_weight(edge.weight);
+        }
+
+        for (const auto& incidence_list : incidence_lists_) {
+
+            auto& incidence_list_proto = *proto.add_incidence_lists();
+            for (const auto edge_id : incidence_list) {
+                incidence_list_proto.add_edge_ids(edge_id);
+            }
+        }
+    }
+
+    template <typename Weight>
+    DirectedWeightedGraph<Weight> DirectedWeightedGraph<Weight>::Deserialize(const GraphProto::DirectedWeightedGraph& proto) {
+        DirectedWeightedGraph graph;
+
+        graph.edges_.reserve(proto.edges_size());
+        for (const auto& edge_proto : proto.edges()) {
+            auto& edge = graph.edges_.emplace_back();
+            edge.from = edge_proto.from();
+            edge.to = edge_proto.to();
+            edge.weight = edge_proto.weight();
+        }
+
+        graph.incidence_lists_.reserve(proto.incidence_lists_size());
+        for (const auto& incidence_list_proto : proto.incidence_lists()) {
+            auto& incidence_list = graph.incidence_lists_.emplace_back();
+            incidence_list.reserve(incidence_list_proto.edge_ids_size());
+            for (const auto edge_id : incidence_list_proto.edge_ids()) {
+                incidence_list.push_back(edge_id);
+            }
+        }
+
+        return graph;
+    }
+
 }  // namespace graph
